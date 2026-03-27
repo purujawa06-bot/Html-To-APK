@@ -18,10 +18,8 @@
 
         /* Iframe Styles */
         #main-frame {
-            position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
             border: none; display: block;
-            transition: opacity 0.5s ease;
         }
 
         /* Modern Offline Screen */
@@ -69,7 +67,7 @@
         .btn-retry:active { transform: scale(0.95); }
 
         /* Loading State */
-        .hidden { opacity: 0; pointer-events: none; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -99,6 +97,10 @@
 
         function checkConnection() {
             if (navigator.onLine) {
+                // Reload iframe jika sebelumnya dalam kondisi offline
+                if (offlineScreen.style.display === 'flex') {
+                    frame.src = frame.src;
+                }
                 offlineScreen.style.display = 'none';
                 frame.classList.remove('hidden');
             } else {
@@ -113,11 +115,8 @@
             btn.innerText = "Mengecek...";
             
             setTimeout(() => {
-                checkConnection();
+                checkConnection(); // Logic reload sudah ditangani di dalam fungsi ini
                 btn.innerText = "Coba Lagi";
-                if (navigator.onLine) {
-                    frame.src = frame.src; // Reload iframe
-                }
             }, 1000);
         }
 
