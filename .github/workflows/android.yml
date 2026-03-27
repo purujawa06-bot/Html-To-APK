@@ -10,46 +10,62 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - uses: actions/setup-java@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'gradle'
 
-      - run: npm install
-      - run: npx cap sync android
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Capacitor Sync
+        run: npx cap sync android
 
       - name: Generate Random Keystore
         run: |
-          keytool -genkey -v -keystore android/release.keystore -alias key0 -keyalg RSA -keysize 2048 -validity 10000           -storepass password123 -keypass password123           -dname "CN=Random, OU=Dev, O=App, L=ID, S=ID, C=ID"
+          keytool -genkey -v -keystore android/app/release.keystore \
+            -alias key0 -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass password123 -keypass password123 \
+            -dname "CN=Random, OU=Dev, O=App, L=ID, S=ID, C=ID"
 
-      - name: Inject Signing
+      - name: Inject Signing Config to Gradle
         run: |
-          sed -i '/android {/a\
-    signingConfigs {\
-        release {\
-            storeFile file("release.keystore")\
-            storePassword "password123"\
-            keyAlias "key0"\
-            keyPassword "password123"\
-        }\
-    }\
-    buildTypes {\
-        release {\
-            signingConfig signingConfigs.release\
-        }\
-    }' android/app/build.gradle
+          # Hapus blok signingConfigs dan buildTypes lama jika ada untuk menghindari duplikasi (Opsional tergantung template)
+          # Cara paling aman adalah menambahkan config di akhir file gradle
+          cat <<EOF >> android/app/build.gradle
+
+          android {
+              signingConfigs {
+                  release {
+                      storeFile file("release.keystore")
+                      storePassword "password123"
+                      keyAlias "key0"
+                      keyPassword "password123"
+                  }
+              }
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                  }
+              }
+          }
+          EOF
 
       - name: Build AAB
+        working-directory: android
         run: |
-          cd android
           chmod +x gradlew
           ./gradlew bundleRelease
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: app-release
           path: android/app/build/outputs/bundle/release/app-release.aab
