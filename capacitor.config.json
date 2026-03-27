@@ -1,0 +1,6 @@
+{
+  "appId": "com.puruboy.purtv",
+  "appName": "PurTV Donghua",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
