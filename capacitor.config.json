@@ -1,0 +1,10 @@
+{
+  "appId": "com.purtv.donghua",
+  "appName": "PurTV Donghua",
+  "webDir": "www",
+  "server": {
+    "allowNavigation": [
+      "puruboy-api.vercel.app"
+    ]
+  }
+}
