@@ -29,6 +29,16 @@ jobs:
       - name: Add Android Platform
         run: npx cap add android
 
+      - name: Patch AndroidManifest – allow orientation change on fullscreen
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          # Tambahkan screenOrientation=fullSensor dan pastikan configChanges lengkap
+          sed -i 's/android:configChanges="[^"]*"/android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation"/' "$MANIFEST"
+          # Hapus screenOrientation statis jika ada (supaya plugin bisa override)
+          sed -i '/android:screenOrientation/d' "$MANIFEST"
+          echo "=== Patched AndroidManifest activity tag ==="
+          grep -A5 'activity' "$MANIFEST" | head -20
+
       - name: Generate App Icons & Splash
         run: |
           if [ -d "assets" ]; then

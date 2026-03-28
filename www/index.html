@@ -176,6 +176,47 @@
 
         // Cek saat pertama kali buka
         checkConnection();
+
+        // ─── Fullscreen → Landscape ───────────────────────────────────────
+        function lockLandscape() {
+            // Web API (didukung Capacitor Android WebView)
+            try {
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(() => {});
+                }
+            } catch (e) {}
+            // Capacitor Screen Orientation plugin (fallback)
+            try {
+                const SO = window.Capacitor &&
+                           window.Capacitor.Plugins &&
+                           window.Capacitor.Plugins.ScreenOrientation;
+                if (SO) SO.lock({ orientation: 'LANDSCAPE' });
+            } catch (e) {}
+        }
+
+        function unlockOrientation() {
+            try {
+                if (screen.orientation && screen.orientation.unlock) {
+                    screen.orientation.unlock();
+                }
+            } catch (e) {}
+            try {
+                const SO = window.Capacitor &&
+                           window.Capacitor.Plugins &&
+                           window.Capacitor.Plugins.ScreenOrientation;
+                if (SO) SO.unlock();
+            } catch (e) {}
+        }
+
+        // Standard fullscreen event (iframe fullscreen juga trigger ini)
+        document.addEventListener('fullscreenchange', () => {
+            document.fullscreenElement ? lockLandscape() : unlockOrientation();
+        });
+        // Webkit prefix (beberapa embedded player pakai ini)
+        document.addEventListener('webkitfullscreenchange', () => {
+            document.webkitFullscreenElement ? lockLandscape() : unlockOrientation();
+        });
+        // ──────────────────────────────────────────────────────────────────
     </script>
 </body>
 </html>
