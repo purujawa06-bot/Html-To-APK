@@ -31,7 +31,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       # ─── Android SDK ────────────────────────────────────────────
       - name: 📱 Set up Android SDK
@@ -43,7 +42,7 @@ jobs:
 
       # ─── Dependencies ───────────────────────────────────────────
       - name: 📦 Install NPM Dependencies
-        run: npm ci
+        run: npm install
 
       # ─── Capacitor Sync ─────────────────────────────────────────
       - name: 🔄 Capacitor Sync
