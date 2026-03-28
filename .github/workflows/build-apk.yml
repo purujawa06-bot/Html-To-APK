@@ -94,6 +94,28 @@ jobs:
             echo "✅ Debug keystore generated"
           fi
 
+      # ─── Gradle Wrapper ─────────────────────────────────────────
+      - name: 🔧 Download Gradle Wrapper JAR
+        working-directory: android
+        run: |
+          mkdir -p gradle/wrapper
+          GRADLE_VERSION="8.2.1"
+          curl -fL \
+            "https://raw.githubusercontent.com/gradle/gradle/v${GRADLE_VERSION}/gradle/wrapper/gradle-wrapper.jar" \
+            -o gradle/wrapper/gradle-wrapper.jar 2>/dev/null || \
+          curl -fL \
+            "https://github.com/gradle/gradle/raw/v${GRADLE_VERSION}/gradle/wrapper/gradle-wrapper.jar" \
+            -o gradle/wrapper/gradle-wrapper.jar 2>/dev/null || \
+          (
+            echo "Downloading via Gradle distribution..."
+            curl -fL "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" -o /tmp/gradle-dist.zip
+            unzip -p /tmp/gradle-dist.zip "gradle-${GRADLE_VERSION}/lib/plugins/gradle-wrapper-*.jar" > gradle/wrapper/gradle-wrapper.jar 2>/dev/null || \
+            unzip /tmp/gradle-dist.zip -d /tmp/gradle-dist/ && \
+            find /tmp/gradle-dist -name "gradle-wrapper*.jar" | head -1 | xargs -I{} cp {} gradle/wrapper/gradle-wrapper.jar
+          )
+          echo "✅ gradle-wrapper.jar ready ($(du -h gradle/wrapper/gradle-wrapper.jar | cut -f1))"
+          chmod +x gradlew
+
       # ─── Build APK ──────────────────────────────────────────────
       - name: 🏗️ Build Release APK
         working-directory: android
@@ -102,7 +124,6 @@ jobs:
           KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS || 'purtv' }}
           KEYSTORE_ALIAS_PASS: ${{ secrets.KEYSTORE_ALIAS_PASS || 'purtv123' }}
         run: |
-          chmod +x gradlew
           ./gradlew assembleRelease \
             -Pandroid.injected.signing.store.file="$(pwd)/app/purtv.keystore" \
             -Pandroid.injected.signing.store.password="$KEYSTORE_PASS" \
